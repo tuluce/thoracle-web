@@ -3,12 +3,53 @@ const FILE_INPUT_TAB_INDEX = 0;
 const URL_INPUT_TAB_INDEX = 1;
 
 MAX_KEYWORD_COUNT = 10
-const thoracleApiUrl = 'https://thoracle-link-api.herokuapp.com/ocr_parse/';
+const thoracleApiUrl = 'https://thoracle-link-api.herokuapp.com/';
 const corsApiUrl = 'https://cors-anywhere.herokuapp.com/';
+
+async function serverSideCrawl(thoracleApiRequestHeaders, thoracleApiRequestBody) {
+  const thoracleApiResponse = await fetch(thoracleApiUrl + 'ocr_parse_search/', {
+    method: 'POST',
+    headers: thoracleApiRequestHeaders,
+    body: thoracleApiRequestBody
+  });
+  const thoracleApiResponseJson = await thoracleApiResponse.json();
+  const tweetLink = thoracleApiResponseJson.search;
+  return tweetLink;
+}
+
+async function clientSideCrawl(thoracleApiRequestHeaders, thoracleApiRequestBody) {
+  const thoracleApiResponse = await fetch(thoracleApiUrl + 'ocr_parse/', {
+    method: 'POST',
+    headers: thoracleApiRequestHeaders,
+    body: thoracleApiRequestBody
+  });
+  const thoracleApiResponseJson = await thoracleApiResponse.json();
+  const userHandle = thoracleApiResponseJson.parse[0].substring(1);
+  const keywordList = thoracleApiResponseJson.parse[1];
+  const keywords = keywordList.slice(0, MAX_KEYWORD_COUNT).join(' ');
+  const query = `${keywords} (from:${userHandle})`;
+  console.log('Built query:\n' + query);
+  const encodedQuery = encodeURI(query);
+  const twitterSearchUrl = `https://twitter.com/search?q=${encodedQuery}`;
+  console.log('Built link:\n' + twitterSearchUrl);
+
+  const twitterSearchUrlWithCors = corsApiUrl + twitterSearchUrl;
+  const twitterSearchResponse = await fetch(twitterSearchUrlWithCors, {
+    method: 'GET',
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko.'
+    }
+  });
+  const twitterSaearchResponseText = await twitterSearchResponse.text();
+  const tweetId = /data-tweet-id="([0-9]+)"/.exec(twitterSaearchResponseText)[1];
+  const tweetLink = `https://twitter.com/${userHandle}/status/${tweetId}`
+  return tweetLink;
+}
 
 async function searchPerformed() {
   const fileInputElement = document.getElementById('file-input');
   const urlInputElement = document.getElementById('url-input');
+  const serverSideCrawlElement = document.getElementById('server-side-crawl');
   const searchButtonElement = document.getElementById('search-button');
   const resultsElement = document.getElementById('results');
   resultsElement.innerHTML = 'Searching...';
@@ -29,26 +70,12 @@ async function searchPerformed() {
   }
   
   try {
-    const thoracleApiResponse = await fetch(thoracleApiUrl, {
-      method: 'POST',
-      headers: thoracleApiRequestHeaders,
-      body: thoracleApiRequestBody
-    });
-    const thoracleApiResponseJson = await thoracleApiResponse.json();
-    const userHandle = thoracleApiResponseJson.parse[0].substring(1);
-    const keywordList = thoracleApiResponseJson.parse[1];
-    const keywords = keywordList.slice(0, MAX_KEYWORD_COUNT).join(' ');
-    const query = `${keywords} (from:${userHandle})`;
-    console.log('Built query:\n' + query);
-    const encodedQuery = encodeURI(query);
-    const twitterSearchUrl = `https://twitter.com/search?q=${encodedQuery}`;
-    console.log('Built link:\n' + twitterSearchUrl);
-  
-    const twitterSearchUrlWithCors = corsApiUrl + twitterSearchUrl;
-    const twitterSearchResponse = await fetch(twitterSearchUrlWithCors);
-    const twitterSaearchResponseText = await twitterSearchResponse.text();
-    const tweetId = /data-tweet-id="([0-9]+)"/.exec(twitterSaearchResponseText)[1];
-    const tweetLink = `https://twitter.com/${userHandle}/status/${tweetId}`
+    let tweetLink = "-";
+    if (serverSideCrawlElement.checked) {
+      tweetLink = await serverSideCrawl(thoracleApiRequestHeaders, thoracleApiRequestBody);
+    } else {
+      tweetLink = await clientSideCrawl(thoracleApiRequestHeaders, thoracleApiRequestBody);
+    }
   
     let resultHtml = 'Found the Twitter link:<br>';
     resultHtml += `<a href="${tweetLink}" target="_blank">${tweetLink}</a><br/>`;
