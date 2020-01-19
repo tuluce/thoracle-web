@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Thoracle</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="Find the Twitter link from a tweet screenshot."/>
+    <link rel="stylesheet" href="thoracle-style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  </head>
+  
+  <body>
+    <div class="content">
+    <div>
+      <h1>Thoracle</h1>
+      <i>Find the Twitter link from a tweet screenshot.</i>
+      <br/>
+      <br/>
+      <div class="choose-methods">
+        <div class="row">
+          <div class="col s12">
+            <ul class="tabs">
+              <li class="tab col s3"><a href="#tab1" class="active">Choose Image File</a></li>
+              <li class="tab col s3"><a href="#tab2">Paste Image URL</a></li>
+            </ul>
+          </div>
+          <div id="tab1" class="col s12">
+            <br/>
+            <label class="active" for="file-input">
+              Choose the screenshot image from your device
+            </label>
+            <br/>
+            <br/>
+            <input id="file-input" type="file">
+          </div>
+          <div id="tab2" class="col s12">
+            <br/>
+            <div class="row">
+              <div class="input-field col s6">
+                <input id="url-input" type="text">
+                <label class="active" for="url-input">
+                  Paste the URL for the tweet screenshot image
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <a id="search-button" class="waves-effect waves-light btn" onclick="searchPerformed()">SEARCH</a>
+      <br/>
+      <br/>
+      <div id="results"></div>
+    </div>
+  </body>
+  
+  <script src="thoracle-script.js"></script>
+  
+</html>
