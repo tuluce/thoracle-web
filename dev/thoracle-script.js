@@ -2,12 +2,11 @@ const chooseMethodTabs = M.Tabs.init(document.querySelector('.tabs'), {});
 const FILE_INPUT_TAB_INDEX = 0;
 const URL_INPUT_TAB_INDEX = 1;
 
-MAX_KEYWORD_COUNT = 10
-const thoracleApiUrl = 'https://thoracle-link-api.herokuapp.com/';
+const thoracleApiUrl = 'https://thoracle-link-api.herokuapp.com/run';
 const corsApiUrl = 'https://cors-anywhere.herokuapp.com/';
 
 async function serverSideCrawl(thoracleApiRequestHeaders, thoracleApiRequestBody) {
-  const thoracleApiResponse = await fetch(thoracleApiUrl + 'ocr_parse_search/', {
+  const thoracleApiResponse = await fetch(thoracleApiUrl + '?search', {
     method: 'POST',
     headers: thoracleApiRequestHeaders,
     body: thoracleApiRequestBody
@@ -18,20 +17,14 @@ async function serverSideCrawl(thoracleApiRequestHeaders, thoracleApiRequestBody
 }
 
 async function clientSideCrawl(thoracleApiRequestHeaders, thoracleApiRequestBody) {
-  const thoracleApiResponse = await fetch(thoracleApiUrl + 'ocr_parse/', {
+  const thoracleApiResponse = await fetch(thoracleApiUrl + '?parse&query', {
     method: 'POST',
     headers: thoracleApiRequestHeaders,
     body: thoracleApiRequestBody
   });
   const thoracleApiResponseJson = await thoracleApiResponse.json();
   const userHandle = thoracleApiResponseJson.parse[0].substring(1);
-  const keywordList = thoracleApiResponseJson.parse[1];
-  const keywords = keywordList.slice(0, MAX_KEYWORD_COUNT).join(' ');
-  const query = `${keywords} (from:${userHandle})`;
-  console.log('Built query:\n' + query);
-  const encodedQuery = encodeURI(query);
-  const twitterSearchUrl = `https://twitter.com/search?q=${encodedQuery}`;
-  console.log('Built link:\n' + twitterSearchUrl);
+  const twitterSearchUrl = thoracleApiResponseJson.query[1];
 
   const twitterSearchUrlWithCors = corsApiUrl + twitterSearchUrl;
   const twitterSearchResponse = await fetch(twitterSearchUrlWithCors, {
