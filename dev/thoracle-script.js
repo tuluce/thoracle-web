@@ -5,10 +5,9 @@ const URL_INPUT_TAB_INDEX = 1;
 const thoracleApiUrl = 'https://thoracle-link-api.herokuapp.com/run';
 const corsApiUrl = 'https://cors-anywhere.herokuapp.com/';
 
-async function serverSideCrawl(thoracleApiRequestHeaders, thoracleApiRequestBody) {
+async function serverSideCrawl(thoracleApiRequestBody) {
   const thoracleApiResponse = await fetch(thoracleApiUrl + '?search', {
     method: 'POST',
-    headers: thoracleApiRequestHeaders,
     body: thoracleApiRequestBody
   });
   const thoracleApiResponseJson = await thoracleApiResponse.json();
@@ -16,10 +15,9 @@ async function serverSideCrawl(thoracleApiRequestHeaders, thoracleApiRequestBody
   return tweetLink;
 }
 
-async function clientSideCrawl(thoracleApiRequestHeaders, thoracleApiRequestBody) {
+async function clientSideCrawl(thoracleApiRequestBody) {
   const thoracleApiResponse = await fetch(thoracleApiUrl + '?parse&query', {
     method: 'POST',
-    headers: thoracleApiRequestHeaders,
     body: thoracleApiRequestBody
   });
   const thoracleApiResponseJson = await thoracleApiResponse.json();
@@ -49,25 +47,21 @@ async function searchPerformed() {
   searchButtonElement.classList.add('disabled');
 
   const chosenMethodTabIndex = chooseMethodTabs.index;
-  let thoracleApiRequestHeaders = {};
-  let thoracleApiRequestBody = '';
+  const thoracleApiRequestBody = new FormData();
   if (chosenMethodTabIndex == FILE_INPUT_TAB_INDEX) {
     const imageFile = fileInputElement.files[0];
-    const formData = new FormData();
-    formData.append('image', imageFile);
-    thoracleApiRequestBody = formData;
+    thoracleApiRequestBody.append('image', imageFile);
   } else if (chosenMethodTabIndex == URL_INPUT_TAB_INDEX) {
     const imageUrl = urlInputElement.value;
-    thoracleApiRequestBody = `image_url=${imageUrl}`;
-    thoracleApiRequestHeaders = {'Content-Type': 'application/x-www-form-urlencoded'};
+    thoracleApiRequestBody.append('image_url', imageUrl);
   }
   
   try {
     let tweetLink = null;
     if (serverSideCrawlElement.checked) {
-      tweetLink = await serverSideCrawl(thoracleApiRequestHeaders, thoracleApiRequestBody);
+      tweetLink = await serverSideCrawl(thoracleApiRequestBody);
     } else {
-      tweetLink = await clientSideCrawl(thoracleApiRequestHeaders, thoracleApiRequestBody);
+      tweetLink = await clientSideCrawl(thoracleApiRequestBody);
     }
     
     if (!tweetLink) {
