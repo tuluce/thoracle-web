@@ -46,7 +46,7 @@ async function searchPerformed() {
   const searchButtonElement = document.getElementById('search-button');
   const resultsElement = document.getElementById('results');
   resultsElement.innerHTML = 'Searching...';
-  searchButtonElement.classList.add("disabled");
+  searchButtonElement.classList.add('disabled');
 
   const chosenMethodTabIndex = chooseMethodTabs.index;
   let thoracleApiRequestHeaders = {};
@@ -54,7 +54,7 @@ async function searchPerformed() {
   if (chosenMethodTabIndex == FILE_INPUT_TAB_INDEX) {
     const imageFile = fileInputElement.files[0];
     const formData = new FormData();
-    formData.append("image", imageFile);
+    formData.append('image', imageFile);
     thoracleApiRequestBody = formData;
   } else if (chosenMethodTabIndex == URL_INPUT_TAB_INDEX) {
     const imageUrl = urlInputElement.value;
@@ -63,13 +63,17 @@ async function searchPerformed() {
   }
   
   try {
-    let tweetLink = "-";
+    let tweetLink = null;
     if (serverSideCrawlElement.checked) {
       tweetLink = await serverSideCrawl(thoracleApiRequestHeaders, thoracleApiRequestBody);
     } else {
       tweetLink = await clientSideCrawl(thoracleApiRequestHeaders, thoracleApiRequestBody);
     }
-  
+    
+    if (!tweetLink) {
+      throw 'Not found';
+    }
+
     let resultHtml = 'Found the Twitter link:<br>';
     resultHtml += `<a href="${tweetLink}" target="_blank">${tweetLink}</a><br/>`;
     resultsElement.innerHTML = resultHtml;
@@ -77,7 +81,7 @@ async function searchPerformed() {
     console.log(exception)
     resultsElement.innerHTML = 'Tweet could not be found.';
   } finally {
-    searchButtonElement.classList.remove("disabled");
+    searchButtonElement.classList.remove('disabled');
   }
   
 }
