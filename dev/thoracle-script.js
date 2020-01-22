@@ -6,7 +6,8 @@ const thoracleApiUrl = 'https://thoracle-link-api.herokuapp.com/run';
 const corsApiUrl = 'https://cors-anywhere.herokuapp.com/';
 
 async function serverSideCrawl(thoracleApiRequestBody) {
-  const thoracleApiResponse = await fetch(thoracleApiUrl + '?search', {
+  thoracleApiRequestBody.append('requested_results', 'search');
+  const thoracleApiResponse = await fetch(thoracleApiUrl, {
     method: 'POST',
     body: thoracleApiRequestBody
   });
@@ -16,7 +17,8 @@ async function serverSideCrawl(thoracleApiRequestBody) {
 }
 
 async function clientSideCrawl(thoracleApiRequestBody) {
-  const thoracleApiResponse = await fetch(thoracleApiUrl + '?parse&query', {
+  thoracleApiRequestBody.append('requested_results', 'parse,query');
+  const thoracleApiResponse = await fetch(thoracleApiUrl, {
     method: 'POST',
     body: thoracleApiRequestBody
   });
