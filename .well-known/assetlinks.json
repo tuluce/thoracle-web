@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "net.thoracle.thoracle",
+    "sha256_cert_fingerprints": [
+      "55:5C:CB:B3:29:7E:36:77:FB:1D:F4:A3:6E:4D:58:05:0D:BA:5D:4E:A4:0B:7C:95:AF:17:34:1C:6B:01:4B:D1"
+    ]
+  }
+}]
